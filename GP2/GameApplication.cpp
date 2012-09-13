@@ -61,6 +61,21 @@ CGameApplication::~CGameApplication(void)
 
 	bool CGameApplication::initGraphics()
 	{
+		//initializes the Direct3D10
+		RECT windowRect;
+		GetClientRect(m_pWindow->getHandleToWindow(),&windowRect);
+
+		UINT width=windowRect.right-windowRect.left;
+		UINT height=windowRect.bottom-windowRect.top;
+
+		//Retrieves the width and height of the window, stores these values 
+		UINT createDeviceFlags=0;
+#ifdef _DEBUG
+		createDeviceFlags|=D3D10_CREATE_DEVICE_DEBUG;
+#endif
+
+		DXGI_SWAP_CHAIN_DESC sd;
+		ZeroMemory(&sd, sizeof(sd));
 		return true;
 	}
 
