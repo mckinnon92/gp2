@@ -46,7 +46,8 @@ private:
 	ID3D10EffectShaderResourceVariable * DiffuseTextureVariable;
 	ID3D10ShaderResourceView* m_pTextureShaderResource;
 
-
+	//Loading the texture from file
+	ID3D10ShaderResourceView* m_pDiffuseTexture;
 
 	D3DXMATRIX m_matWorld;
 	D3DXMATRIX m_matScale;

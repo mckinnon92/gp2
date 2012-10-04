@@ -5,6 +5,7 @@ struct Vertex
 {
 	D3DXVECTOR3 Pos;
 	D3DXCOLOR colour;
+	D3DXVECTOR2 texCoords;
 };
 
 
@@ -22,13 +23,15 @@ CGameApplication::CGameApplication(void)
 	m_pDepthStencilView=NULL;
 	m_pDepthStencilTexture=NULL;
 	m_pEffect=NULL;
+	m_pDiffuseTexture=NULL;
 }
 
 CGameApplication::~CGameApplication(void)
 {
 	if(m_pD3D10Device)
 		m_pD3D10Device->ClearState();
-
+	if (m_pDiffuseTexture)
+		m_pDiffuseTexture -> Release();
 	if(m_pVertexBuffer)
 		m_pVertexBuffer->Release();
 	if(m_pIndexBuffer)
@@ -91,6 +94,8 @@ CGameApplication::~CGameApplication(void)
 
 		m_pViewMatrixVariable->SetMatrix((float*)m_matView);
 
+		DiffuseTextureVariable->SetResource(m_pDiffuseTexture);
+
 		m_pWorldMatrixVariable->SetMatrix((float*)m_matWorld);
 
 		D3D10_TECHNIQUE_DESC techDesc;
@@ -139,14 +144,14 @@ CGameApplication::~CGameApplication(void)
 		//Defines an array of 3 simple vertices and then we initialize the D3D10_SUBRESOURCE_DATA structure and set the pSysMem variable of this structure to equal our vertices 
 		Vertex vertices[] =
 		{
-			{D3DXVECTOR3(-0.5f, 0.5f, 0.5f), D3DXCOLOR(0.0f,1.0f,1.0f,1.0f)}, 
-			{D3DXVECTOR3(0.5f, -0.5f, 0.5f), D3DXCOLOR(1.0f,0.0f,1.0f,1.0f)}, 
-			{D3DXVECTOR3(-0.5f, -0.5f, 0.5f), D3DXCOLOR(1.0f,0.0f,0.0f,1.0f)}, 
-			{D3DXVECTOR3(0.5f, 0.5f, 0.5f), D3DXCOLOR(1.0f,0.0f,1.0f,1.0f)}, 
-			{D3DXVECTOR3(-0.5f, 0.5f, 1.5f), D3DXCOLOR(1.0f,1.0f,0.0f,1.0f)}, 
-			{D3DXVECTOR3(0.5f, -0.5f, 1.5f), D3DXCOLOR(1.0f,0.0f,1.0f,1.0f)}, 
-			{D3DXVECTOR3(-0.5f, -0.5f, 1.5f), D3DXCOLOR(0.0f,1.0f,0.0f,1.0f)}, 
-			{D3DXVECTOR3(0.5f, 0.5f, 1.5f), D3DXCOLOR(1.0f,0.0f,1.0f,1.0f)},
+			{D3DXVECTOR3(-0.5f, 0.5f, 0.5f), D3DXCOLOR(0.0f,1.0f,1.0f,1.0f), D3DXVECTOR2(0.0f,0.0f)},//0 top left 
+			{D3DXVECTOR3(0.5f, -0.5f, 0.5f), D3DXCOLOR(1.0f,0.0f,1.0f,1.0f), D3DXVECTOR2(3.0f,0.0f)}, //1 bottom right
+			{D3DXVECTOR3(-0.5f, -0.5f, 0.5f), D3DXCOLOR(1.0f,0.0f,0.0f,1.0f), D3DXVECTOR2(0.0f,3.0f)}, //2 bottom left
+			{D3DXVECTOR3(0.5f, 0.5f, 0.5f), D3DXCOLOR(1.0f,0.0f,1.0f,1.0f), D3DXVECTOR2(3.0f,0.0f)}, //3 top right
+			{D3DXVECTOR3(-0.5f, 0.5f, 1.5f), D3DXCOLOR(1.0f,1.0f,0.0f,1.0f), D3DXVECTOR2(0.0f,0.0f)}, 
+			{D3DXVECTOR3(0.5f, -0.5f, 1.5f), D3DXCOLOR(1.0f,0.0f,1.0f,1.0f), D3DXVECTOR2(3.0f,0.0f)}, 
+			{D3DXVECTOR3(-0.5f, -0.5f, 1.5f), D3DXCOLOR(0.0f,1.0f,0.0f,1.0f), D3DXVECTOR2(0.0f,3.0f)}, 
+			{D3DXVECTOR3(0.5f, 0.5f, 1.5f), D3DXCOLOR(1.0f,0.0f,1.0f,1.0f), D3DXVECTOR2(3.0f,0.0f)},
 		};
 		D3D10_SUBRESOURCE_DATA initData;
 		initData.pSysMem =vertices;
@@ -190,7 +195,7 @@ CGameApplication::~CGameApplication(void)
 
 			ID3D10Blob *pErrors = NULL;
 
-		if(FAILED(D3DX10CreateEffectFromFile(TEXT("Transform.fx"), NULL, NULL, "fx_4_0", dwShaderFlags, 0, m_pD3D10Device, NULL, NULL, &m_pEffect, &pErrors, NULL)))
+		if(FAILED(D3DX10CreateEffectFromFile(TEXT("Texture.fx"), NULL, NULL, "fx_4_0", dwShaderFlags, 0, m_pD3D10Device, NULL, NULL, &m_pEffect, &pErrors, NULL)))
 		{
 			MessageBoxA(NULL,(char*)pErrors->GetBufferPointer(), "Error", MB_OK);
 			return false;
@@ -204,7 +209,8 @@ CGameApplication::~CGameApplication(void)
 		D3D10_INPUT_ELEMENT_DESC layout[] = 
 		{
 			{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D10_INPUT_PER_VERTEX_DATA, 0},
-			{"COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D10_INPUT_PER_VERTEX_DATA, 0}
+			{"COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D10_INPUT_PER_VERTEX_DATA, 0},
+			{"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 28, D3D10_INPUT_PER_VERTEX_DATA, 0}
 		};
 
 		UINT numElements = sizeof(layout)/sizeof(D3D10_INPUT_ELEMENT_DESC);
@@ -246,7 +252,13 @@ CGameApplication::~CGameApplication(void)
 		m_vecRotation = D3DXVECTOR3(0.0f,0.0f,0.0f);
 		m_pWorldMatrixVariable = m_pEffect->GetVariableByName("matWorld")->AsMatrix();
 
+		if (FAILED(D3DX10CreateShaderResourceViewFromFile(m_pD3D10Device, TEXT("face.png"), NULL, NULL, &m_pDiffuseTexture, NULL)))
+		{
+			MessageBox(NULL,TEXT("Can't load the texture"), TEXT("Error"), MB_OK);
+			return false;
+		}
 
+		DiffuseTextureVariable=m_pEffect->GetVariableByName("diffuseTexture")->AsShaderResource();
 
 		return true;
 	}
