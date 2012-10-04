@@ -35,6 +35,7 @@ private:
 
 	//Holds the created buffer
 	ID3D10Buffer* m_pVertexBuffer;
+	ID3D10Buffer* m_pIndexBuffer;
 	ID3D10InputLayout* m_pVertexLayout;
 
 	ID3D10Effect* m_pEffect;
@@ -45,9 +46,10 @@ private:
 	ID3D10EffectShaderResourceVariable * DiffuseTextureVariable;
 	ID3D10ShaderResourceView* m_pTextureShaderResource;
 
+
+
 	D3DXMATRIX m_matWorld;
 	D3DXMATRIX m_matScale;
-	D3DXMATRIX m_matRotation;
 	D3DXMATRIX m_matRotation;
 	D3DXMATRIX m_matTranslation;
 

@@ -4,15 +4,20 @@ float4x4 matProjection:PROJECTION;
 
 struct VS_INPUT
 {
+	float4 pos:POSITION;
+};
+
+struct PS_INPUT
+{
 	float4 pos:SV_POSITION;
 };
 
 PS_INPUT VS(VS_INPUT input)
 {
-	PS_INPUT out=(PS_INPUT)0;
+	PS_INPUT output=(PS_INPUT)0;
 	
 	float4x4 matViewProjection=mul(matView,matProjection);
-	float4x4 matWorldViewProjection=mul(matWorld,matProjection);
+	float4x4 matWorldViewProjection=mul(matWorld,matViewProjection);
 	
 	output.pos=mul(input.pos,matWorldViewProjection);
 	return output;
@@ -34,7 +39,7 @@ technique10 Render
 	{
 		SetVertexShader(CompileShader(vs_4_0, VS()));
 		SetGeometryShader(NULL);
-		SetPixelShader(CompileShaer(ps_4_0, PS()));
+		SetPixelShader(CompileShader(ps_4_0, PS()));
 		SetRasterizerState(DisableCulling);
 	}
 }

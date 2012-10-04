@@ -16,9 +16,11 @@ CGameApplication::CGameApplication(void)
 	m_pSwapChain=NULL;
 	//Sets the vertex
 	m_pVertexBuffer=NULL;
+	m_pIndexBuffer=NULL;
 	m_pVertexLayout=NULL;
 	m_pDepthStencilView=NULL;
 	m_pDepthStencilTexture=NULL;
+	m_pEffect=NULL;
 }
 
 CGameApplication::~CGameApplication(void)
@@ -28,11 +30,12 @@ CGameApplication::~CGameApplication(void)
 
 	if(m_pVertexBuffer)
 		m_pVertexBuffer->Release();
+	if(m_pIndexBuffer)
+		m_pIndexBuffer->Release();
 	if(m_pVertexLayout)
 		m_pVertexLayout->Release();
 	if(m_pEffect)
 		m_pEffect->Release();
-
 	if(m_pRenderTargetView)
 		m_pRenderTargetView->Release();
 	if (m_pDepthStencilTexture)
@@ -60,6 +63,7 @@ CGameApplication::~CGameApplication(void)
 			return false;
 		if (!initGame())
 			return false;
+
 		return true;
 	}
 
@@ -94,7 +98,8 @@ CGameApplication::~CGameApplication(void)
 		for (UINT p = 0; p< techDesc.Passes; ++p)
 		{
 			m_pTechnique->GetPassByIndex(p)->Apply(0);
-			m_pD3D10Device->Draw(3,0);
+			m_pD3D10Device->DrawIndexed(36,0,0);
+			//m_pD3D10Device->Draw(3,0);
 		}
 
 		//Flips the Swap Chain so the back buffer will be copied to the front buffer and our rendered scene should appear.	
@@ -103,6 +108,11 @@ CGameApplication::~CGameApplication(void)
 
 	void CGameApplication::update()
 	{
+
+				m_vecRotation.x+=0.0001f;
+m_vecRotation.y+=0.0001f;
+m_vecRotation.z+=0.0001f;
+
 		D3DXMatrixScaling(&m_matScale, m_vecScale.x, m_vecScale.y, m_vecScale.z);
 		D3DXMatrixRotationYawPitchRoll(&m_matRotation, m_vecRotation.y, m_vecRotation.x, m_vecRotation.z);
 		D3DXMatrixTranslation(&m_matTranslation, m_vecPosition.x, m_vecPosition.y, m_vecPosition.z);
@@ -117,7 +127,7 @@ CGameApplication::~CGameApplication(void)
 		//How the buffer is read/written to 
 		bd.Usage = D3D10_USAGE_DEFAULT;
 		// The size of the bufter (Will hold 3 vertices in this case)
-		bd.ByteWidth = sizeof(Vertex)*3;
+		bd.ByteWidth = sizeof(Vertex)*8;
 		//Type of buffer we are creating 
 		bd.BindFlags = D3D10_BIND_VERTEX_BUFFER;
 		//Specifies that buffer can be read/written by the CPU
@@ -128,10 +138,42 @@ CGameApplication::~CGameApplication(void)
 		//Defines an array of 3 simple vertices and then we initialize the D3D10_SUBRESOURCE_DATA structure and set the pSysMem variable of this structure to equal our vertices 
 		Vertex vertices[] =
 		{
-			D3DXVECTOR3(0.0f, 0.5f, 0.5f), D3DXVECTOR3(0.5f, -0.5f, 0.5f), D3DXVECTOR3(-0.5f, -0.5f, 0.5f),
+			D3DXVECTOR3(-0.5f, 0.5f, 0.5f), D3DXVECTOR3(0.5f, -0.5f, 0.5f), D3DXVECTOR3(-0.5f, -0.5f, 0.5f), D3DXVECTOR3(0.5f, 0.5f, 0.5f), D3DXVECTOR3(-0.5f, 0.5f, 1.5f), D3DXVECTOR3(0.5f, -0.5f, 1.5f), D3DXVECTOR3(-0.5f, -0.5f, 1.5f), D3DXVECTOR3(0.5f, 0.5f, 1.5f),
 		};
 		D3D10_SUBRESOURCE_DATA initData;
 		initData.pSysMem =vertices;
+
+			//Create our buffer
+		if (FAILED(m_pD3D10Device->CreateBuffer(
+			//Pointer to the buffer description
+			&bd,
+			//Pointer to resource data
+			&initData,
+			//Memory address of a pointer to a buffer
+			&m_pVertexBuffer)))
+			return false;
+
+			D3D10_BUFFER_DESC ibd;
+				//Create the buffer description
+		int indices[]={0,1,2,0,1,3,4,5,6,4,5,7,2,5,1,2,5,6,0,6,4,0,6,2,3,5,1,3,5,7,0,7,3,0,7,4};
+		//How the buffer is read/written to 
+		ibd.Usage = D3D10_USAGE_DEFAULT;
+		// The size of the bufter (Will hold 3 vertices in this case)
+		ibd.ByteWidth = sizeof(int)*36;
+		//Type of buffer we are creating 
+		ibd.BindFlags = D3D10_BIND_INDEX_BUFFER;
+		//Specifies that buffer can be read/written by the CPU
+		ibd.CPUAccessFlags = 0;
+		//Used for additional options (none in this case)
+		ibd.MiscFlags = 0;
+	
+
+		D3D10_SUBRESOURCE_DATA IndexBufferInitialData;
+		IndexBufferInitialData.pSysMem = indices;
+		if (FAILED(m_pD3D10Device->CreateBuffer (&ibd, &IndexBufferInitialData, &m_pIndexBuffer)))
+			return false;
+		
+		m_pD3D10Device->IASetIndexBuffer(m_pIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
 
 		DWORD dwShaderFlags = D3D10_SHADER_ENABLE_STRICTNESS;
 		#if defined(DEBUG) || defined(_DEBUG)
@@ -148,16 +190,8 @@ CGameApplication::~CGameApplication(void)
 		//Retrieve the technique from the effect file
 		m_pTechnique=m_pEffect->GetTechniqueByName("Render");
 
-		//Create our buffer
-		if (FAILED(m_pD3D10Device->CreateBuffer(
-			//Pointer to the buffer description
-			&bd,
-			//Pointer to resource data
-			&initData,
-			//Memory address of a pointer to a buffer
-			&m_pVertexBuffer)))
-			return false;
-		
+	
+	
 
 		D3D10_INPUT_ELEMENT_DESC layout[] = 
 		{
@@ -172,7 +206,6 @@ CGameApplication::~CGameApplication(void)
 		{
 			return false;
 		}
-
 		//Tells the Input Assembler about the input layout we have just entered 
 		m_pD3D10Device->IASetInputLayout(m_pVertexLayout);
 		UINT stride = sizeof(Vertex);
@@ -180,6 +213,31 @@ CGameApplication::~CGameApplication(void)
 		m_pD3D10Device->IASetVertexBuffers(0,1,&m_pVertexBuffer, &stride, &offset);
 
 		m_pD3D10Device->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+
+		D3D10_VIEWPORT vp;
+		UINT numViewPorts = 1;
+		m_pD3D10Device->RSGetViewports(&numViewPorts,&vp);
+
+		D3DXMatrixPerspectiveFovLH(&m_matProjection,(float)D3DX_PI * 0.25f, vp.Width / (FLOAT)vp.Height, 0.1f, 100.0f);
+
+		D3DXVECTOR3 cameraPosition=D3DXVECTOR3(0.0f,0.0f,-10.0f);
+		D3DXVECTOR3 up=D3DXVECTOR3(0.0f,1.0f,0.0f);
+		D3DXVECTOR3 lookAt=D3DXVECTOR3(0.0f,0.0f,0.0f);
+
+		D3DXMatrixLookAtLH(&m_matView,&cameraPosition,&lookAt,&up);
+
+		m_pViewMatrixVariable = m_pEffect->GetVariableByName("matView")->AsMatrix();
+		m_pProjectionMatrixVariable = m_pEffect->GetVariableByName("matProjection")->AsMatrix();
+
+		m_pProjectionMatrixVariable->SetMatrix((float*)m_matProjection);
+
+		m_vecPosition=D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+		m_vecScale= D3DXVECTOR3(1.0f,1.0f,1.0f);
+		m_vecRotation = D3DXVECTOR3(0.0f,0.0f,0.0f);
+		m_pWorldMatrixVariable = m_pEffect->GetVariableByName("matWorld")->AsMatrix();
+
+
 
 		return true;
 	}
@@ -248,7 +306,7 @@ CGameApplication::~CGameApplication(void)
 		descDepth.MipLevels = 1;
 		descDepth.ArraySize = 1;
 		descDepth.Format = DXGI_FORMAT_D32_FLOAT;
-		descDepth.SampleDesc.Count - 1;
+		descDepth.SampleDesc.Count =1;
 		descDepth.SampleDesc.Quality = 0;
 		descDepth.Usage = D3D10_USAGE_DEFAULT;
 		descDepth.BindFlags = D3D10_BIND_DEPTH_STENCIL;
@@ -263,6 +321,10 @@ CGameApplication::~CGameApplication(void)
 		descDSV.ViewDimension = D3D10_DSV_DIMENSION_TEXTURE2D;
 		descDSV.Texture2D.MipSlice = 0;
 
+		if (FAILED(m_pD3D10Device->CreateDepthStencilView(m_pDepthStencilTexture,NULL,&m_pDepthStencilView)))
+		{
+			return false;
+		}
 
 
 		//Binds an array of Render Targets to the Output Merger stage of pipeline
@@ -279,26 +341,6 @@ CGameApplication::~CGameApplication(void)
 		//Sets the view port which is bound to the pipeline
 		m_pD3D10Device->RSSetViewports(1, &vp);
 
-		D3DXVECTOR3 cameraPos(0.0f,0.0f,-10.0f);
-		D3DXVECTOR3 cameraLook(0.0f, 0.0f, 1.0f);
-		D3DXVECTOR3 cameraUp(0.0f, 1.0f, 0.0f);
-		D3DXMatrixLookAtLH(&m_matView,&cameraPos, &cameraLook, &cameraUp);
-
-		D3D10_VIEWPORT vp;
-		UINT numViewPorts = 1;
-		m_pD3D10Device->RSGetViewports(&numViewPorts,&vp);
-
-		D3DXMatrixPerspectiveFovLH(&m_matProjection,(float)D3DX_PI * 0.25f, vp.Width / (FLOAT)vp.Height, 0.1f, 100.0f);
-
-		m_pViewMatrixVariable = m_pEffect->GetVariableByName("matView")->AsMatrix();
-		m_pProjectionMatrixVariable = m_pEffect->GetVariableByName("matProjection")->AsMatrix();
-
-		m_pProjectionMatrixVariable->SetMatrix((float*)m_matProjection);
-
-		m_vecPosition=D3DXVECTOR3(0.0f, 0.0f, 0.0f);
-		m_vecScale= D3DXVECTOR3(1.0f,1.0f,1.0f);
-		m_vecRotation = D3DXVECTOR3(0.0f,0.0f,0.0f);
-		m_pWorldMatrixVariable = m_pEffect->GetVariableByName("matWorld")->AsMatrix();
 
 		return true;
 
