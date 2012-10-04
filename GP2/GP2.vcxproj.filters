@@ -46,7 +46,7 @@
     <None Include="ScreenSpace.fx">
       <Filter>Effects</Filter>
     </None>
-    <None Include="Transform.fx">
+    <None Include="..\..\..\..\Downloads\FX Composer Project\Transform\Transform.fx">
       <Filter>Effects</Filter>
     </None>
   </ItemGroup>

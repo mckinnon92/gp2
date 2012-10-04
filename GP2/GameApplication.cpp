@@ -4,6 +4,7 @@
 struct Vertex 
 {
 	D3DXVECTOR3 Pos;
+	D3DXCOLOR colour;
 };
 
 
@@ -109,9 +110,9 @@ CGameApplication::~CGameApplication(void)
 	void CGameApplication::update()
 	{
 
-				m_vecRotation.x+=0.0001f;
-m_vecRotation.y+=0.0001f;
-m_vecRotation.z+=0.0001f;
+			m_vecRotation.x+=0.0001f;
+			m_vecRotation.y+=0.0001f;
+			m_vecRotation.z+=0.0001f;
 
 		D3DXMatrixScaling(&m_matScale, m_vecScale.x, m_vecScale.y, m_vecScale.z);
 		D3DXMatrixRotationYawPitchRoll(&m_matRotation, m_vecRotation.y, m_vecRotation.x, m_vecRotation.z);
@@ -138,7 +139,14 @@ m_vecRotation.z+=0.0001f;
 		//Defines an array of 3 simple vertices and then we initialize the D3D10_SUBRESOURCE_DATA structure and set the pSysMem variable of this structure to equal our vertices 
 		Vertex vertices[] =
 		{
-			D3DXVECTOR3(-0.5f, 0.5f, 0.5f), D3DXVECTOR3(0.5f, -0.5f, 0.5f), D3DXVECTOR3(-0.5f, -0.5f, 0.5f), D3DXVECTOR3(0.5f, 0.5f, 0.5f), D3DXVECTOR3(-0.5f, 0.5f, 1.5f), D3DXVECTOR3(0.5f, -0.5f, 1.5f), D3DXVECTOR3(-0.5f, -0.5f, 1.5f), D3DXVECTOR3(0.5f, 0.5f, 1.5f),
+			{D3DXVECTOR3(-0.5f, 0.5f, 0.5f), D3DXCOLOR(0.0f,1.0f,1.0f,1.0f)}, 
+			{D3DXVECTOR3(0.5f, -0.5f, 0.5f), D3DXCOLOR(1.0f,0.0f,1.0f,1.0f)}, 
+			{D3DXVECTOR3(-0.5f, -0.5f, 0.5f), D3DXCOLOR(1.0f,0.0f,0.0f,1.0f)}, 
+			{D3DXVECTOR3(0.5f, 0.5f, 0.5f), D3DXCOLOR(1.0f,0.0f,1.0f,1.0f)}, 
+			{D3DXVECTOR3(-0.5f, 0.5f, 1.5f), D3DXCOLOR(1.0f,1.0f,0.0f,1.0f)}, 
+			{D3DXVECTOR3(0.5f, -0.5f, 1.5f), D3DXCOLOR(1.0f,0.0f,1.0f,1.0f)}, 
+			{D3DXVECTOR3(-0.5f, -0.5f, 1.5f), D3DXCOLOR(0.0f,1.0f,0.0f,1.0f)}, 
+			{D3DXVECTOR3(0.5f, 0.5f, 1.5f), D3DXCOLOR(1.0f,0.0f,1.0f,1.0f)},
 		};
 		D3D10_SUBRESOURCE_DATA initData;
 		initData.pSysMem =vertices;
@@ -195,7 +203,8 @@ m_vecRotation.z+=0.0001f;
 
 		D3D10_INPUT_ELEMENT_DESC layout[] = 
 		{
-			{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D10_INPUT_PER_VERTEX_DATA, 0}
+			{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D10_INPUT_PER_VERTEX_DATA, 0},
+			{"COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D10_INPUT_PER_VERTEX_DATA, 0}
 		};
 
 		UINT numElements = sizeof(layout)/sizeof(D3D10_INPUT_ELEMENT_DESC);
