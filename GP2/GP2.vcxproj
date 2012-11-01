@@ -98,6 +98,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\..\..\Downloads\FX Composer Project\Transform\Transform.fx" />
+    <None Include="..\..\..\..\Downloads\Resources(1)\Bumpmapping.fx" />
+    <None Include="..\..\..\..\Downloads\Resources(1)\DirectionalLight.fx" />
+    <None Include="..\..\..\..\Downloads\Resources(1)\Parallax.fx" />
     <None Include="ambient.fx" />
     <None Include="diffuse.fx" />
     <None Include="ScreenSpace.fx" />

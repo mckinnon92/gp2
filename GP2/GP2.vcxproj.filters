@@ -107,6 +107,15 @@
     <None Include="diffuse.fx">
       <Filter>Effects</Filter>
     </None>
+    <None Include="..\..\..\..\Downloads\Resources(1)\DirectionalLight.fx">
+      <Filter>Effects</Filter>
+    </None>
+    <None Include="..\..\..\..\Downloads\Resources(1)\Parallax.fx">
+      <Filter>Effects</Filter>
+    </None>
+    <None Include="..\..\..\..\Downloads\Resources(1)\Bumpmapping.fx">
+      <Filter>Effects</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="TransformComponent.h">
