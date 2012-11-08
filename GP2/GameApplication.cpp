@@ -68,45 +68,43 @@ bool CGameApplication::initGame()
 	//Set the name
 	pTestGameObject->setName("Test");
 	//Position
-	pTestGameObject->getTransform()->setPosition(-3.0f,0.0f,10.0f);
+	pTestGameObject->getTransform()->setPosition(0.0f,-2.0f,5.0f);
 	//create material
 	CMaterialComponent *pMaterial=new CMaterialComponent();
 	pMaterial->SetRenderingDevice(m_pD3D10Device);
-	pMaterial->setEffectFilename("DirectionalLight.fx");
+	pMaterial->setEffectFilename("Parallax.fx");
 	pMaterial->setAmbientMaterialColour(D3DXCOLOR(0.5f,0.5f,0.5f,1.0f));
+	pMaterial->setSpecularMaterialColour(D3DXCOLOR(0.5f,0.5f,0.5f,1.0f));
+	pMaterial->setSpecularPower(1.0f);
+	pMaterial->setParallaxBias(0.01f);
+	pMaterial->setParallaxScale(0.05f);
 	pMaterial->loadDiffuseTexture("armoredrecon_diff.png");
+	pMaterial->loadSpecularTexture("armoredrecon_spec.png");
+	pMaterial->loadBumpmapTexture("armoredrecon_N.png");
+	pMaterial->loadParallaxTexture("armoredrecon_Height.png");
 	pTestGameObject->addComponent(pMaterial);
-
 	//Create Mesh
 	CMeshComponent *pMesh=modelloader.loadModelFromFile(m_pD3D10Device,"armoredrecon.fbx");
-	//CMeshComponent *pMesh=modelloader.createCube(m_pD3D10Device,10.0f,10.0f,10.0f);
 	pMesh->SetRenderingDevice(m_pD3D10Device);
 	pTestGameObject->addComponent(pMesh);
 	//add the game object
 	m_pGameObjectManager->addGameObject(pTestGameObject);
 
-	//Second Game Object
-	//Create Game Object
-	pTestGameObject=new CGameObject();
-	//Set the name
+	//Creating second game object
+	/*pTestGameObject = new CGameObject();
 	pTestGameObject->setName("Test2");
-	//Position
-	pTestGameObject->getTransform()->setPosition(3.0f,0.0f,10.0f);
-	//create material
+	pTestGameObject->getTransform()->setPosition(0.0f,-4.0f,10.0f);
+	pTestGameObject->getTransform()->setRotation(0.0f,10.0f,0.0f);
 	pMaterial=new CMaterialComponent();
 	pMaterial->SetRenderingDevice(m_pD3D10Device);
 	pMaterial->setEffectFilename("DirectionalLight.fx");
 	pMaterial->setAmbientMaterialColour(D3DXCOLOR(0.5f,0.5f,0.5f,1.0f));
-	pMaterial->loadDiffuseTexture("armoredrecon_diff.png");
 	pTestGameObject->addComponent(pMaterial);
 
-	//Create Mesh
-	pMesh=modelloader.loadModelFromFile(m_pD3D10Device,"armoredrecon.fbx");
-	//CMeshComponent *pMesh=modelloader.createCube(m_pD3D10Device,10.0f,10.0f,10.0f);
+	pMesh=modelloader.loadModelFromFile(m_pD3D10Device,"Tank1.fbx");
 	pMesh->SetRenderingDevice(m_pD3D10Device);
 	pTestGameObject->addComponent(pMesh);
-	//add the game object
-	m_pGameObjectManager->addGameObject(pTestGameObject);
+	m_pGameObjectManager->addGameObject(pTestGameObject);*/
 
 	CGameObject *pCameraGameObject=new CGameObject();
 	pCameraGameObject->getTransform()->setPosition(0.0f,0.0f,-5.0f);
@@ -237,38 +235,24 @@ void CGameApplication::update()
 		//play sound
 		CTransformComponent * pTransform=m_pGameObjectManager->findGameObject("Test")->getTransform();
 		pTransform->rotate(m_Timer.getElapsedTime(),0.0f,0.0f);
-
-		CTransformComponent * pTransform2=m_pGameObjectManager->findGameObject("Test2")->getTransform();
-		pTransform2->rotate(-m_Timer.getElapsedTime(),0.0f,0.0f);
-
 	}
 	else if (CInput::getInstance().getKeyboard()->isKeyDown((int)'S'))
 	{
 		//play sound
 		CTransformComponent * pTransform=m_pGameObjectManager->findGameObject("Test")->getTransform();
-		pTransform->rotate(m_Timer.getElapsedTime()*-1,0.0f,0.0f);	
-
-		CTransformComponent * pTransform2=m_pGameObjectManager->findGameObject("Test2")->getTransform();
-		pTransform2->rotate(m_Timer.getElapsedTime()*1,0.0f,0.0f);	
+		pTransform->rotate(m_Timer.getElapsedTime()*-1,0.0f,0.0f);
 	}
 	if (CInput::getInstance().getKeyboard()->isKeyDown((int)'A'))
 	{
 		//play sound
 		CTransformComponent * pTransform=m_pGameObjectManager->findGameObject("Test")->getTransform();
 		pTransform->rotate(0.0f,m_Timer.getElapsedTime(),0.0f);
-
-		CTransformComponent * pTransform2=m_pGameObjectManager->findGameObject("Test2")->getTransform();
-		pTransform2->rotate(0.0f,-m_Timer.getElapsedTime(),0.0f);
 	}
-
 	else if (CInput::getInstance().getKeyboard()->isKeyDown((int)'D'))
 	{
 		//play sound
 		CTransformComponent * pTransform=m_pGameObjectManager->findGameObject("Test")->getTransform();
 		pTransform->rotate(0.0f,m_Timer.getElapsedTime()*-1,0.0f);
-
-		CTransformComponent * pTransform2=m_pGameObjectManager->findGameObject("Test2")->getTransform();
-		pTransform2->rotate(0.0f,m_Timer.getElapsedTime()*1,0.0f);
 	}
 	m_pGameObjectManager->update(m_Timer.getElapsedTime());
 
